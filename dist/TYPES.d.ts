@@ -1,7 +1,4 @@
-export declare const BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSETTOCOMMITPATHMAPPER_TYPES: {
-    db: symbol;
-    fromID: symbol;
+export declare const BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES: {
     skip: symbol;
     n: symbol;
-    commitToCommitPathMapper: symbol;
 };

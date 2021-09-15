@@ -44,58 +44,110 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CommitSubsetToCommitPath = void 0;
+exports.CommitSubset = void 0;
 var inversify_1 = require("inversify");
-var bugfinder_framework_1 = require("bugfinder-framework");
 var TYPES_1 = require("./TYPES");
-var CommitSubsetToCommitPath = /** @class */ (function () {
-    function CommitSubsetToCommitPath() {
-        /**
-         * Number of elements to skip in DB.
-         */
+var CommitSubset = /** @class */ (function () {
+    function CommitSubset() {
         this.skip = 0;
     }
-    CommitSubsetToCommitPath.prototype.preprocess = function () {
+    /**
+     * Returns the CommitPaths of the n Commits after the Skip commit
+     * @param localities
+     */
+    CommitSubset.prototype.preprocess = function (localities) {
         return __awaiter(this, void 0, void 0, function () {
-            var commits, commitPaths;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.commitDB.readLocalities(this.fromID, this.skip, this.n)];
-                    case 1:
-                        commits = _a.sent();
-                        commitPaths = this.mapper.map(commits);
-                        return [2 /*return*/, commitPaths];
+            var commitPaths, commits, commitMap, commitPathMap, localities_1, localities_1_1, loc, i, cur;
+            var e_1, _a;
+            return __generator(this, function (_b) {
+                commitPaths = [];
+                commits = [];
+                commitMap = new Map();
+                commitPathMap = new Map();
+                try {
+                    for (localities_1 = __values(localities), localities_1_1 = localities_1.next(); !localities_1_1.done; localities_1_1 = localities_1.next()) {
+                        loc = localities_1_1.value;
+                        this.setCommitPaths(commitPathMap, loc);
+                        if (commitMap.get(loc.commit.hash) != null)
+                            continue;
+                        commitMap.set(loc.commit.hash, loc.commit);
+                        commits.push(loc.commit);
+                    }
                 }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (localities_1_1 && !localities_1_1.done && (_a = localities_1.return)) _a.call(localities_1);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+                for (i = this.skip; i < this.skip + this.n; i++) {
+                    if (i > commits.length)
+                        throw new Error("There are not enough commits in localities for used skip: " + this.skip + " and n: " + this.n);
+                    cur = commits[i];
+                    commitPaths.push.apply(commitPaths, __spreadArray([], __read(commitPathMap.get(cur.hash)), false));
+                }
+                return [2 /*return*/, commitPaths];
             });
         });
     };
-    var _a;
+    CommitSubset.prototype.setCommitPaths = function (commitPathMap, loc) {
+        var cps = commitPathMap.get(loc.commit.hash);
+        if ((cps === null || cps === void 0 ? void 0 : cps.length) > 0)
+            cps.push(loc);
+        if (cps == null)
+            cps = [loc];
+        commitPathMap.set(loc.commit.hash, cps);
+    };
     __decorate([
-        (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSETTOCOMMITPATHMAPPER_TYPES.db),
-        __metadata("design:type", typeof (_a = typeof bugfinder_framework_1.DB !== "undefined" && bugfinder_framework_1.DB) === "function" ? _a : Object)
-    ], CommitSubsetToCommitPath.prototype, "commitDB", void 0);
-    __decorate([
-        (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSETTOCOMMITPATHMAPPER_TYPES.fromID),
-        __metadata("design:type", String)
-    ], CommitSubsetToCommitPath.prototype, "fromID", void 0);
-    __decorate([
-        (0, inversify_1.optional)(),
-        (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSETTOCOMMITPATHMAPPER_TYPES.skip),
+        (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.skip),
         __metadata("design:type", Number)
-    ], CommitSubsetToCommitPath.prototype, "skip", void 0);
+    ], CommitSubset.prototype, "skip", void 0);
     __decorate([
-        (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSETTOCOMMITPATHMAPPER_TYPES.n),
+        (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.n),
         __metadata("design:type", Number)
-    ], CommitSubsetToCommitPath.prototype, "n", void 0);
-    __decorate([
-        (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSETTOCOMMITPATHMAPPER_TYPES.commitToCommitPathMapper),
-        __metadata("design:type", Object)
-    ], CommitSubsetToCommitPath.prototype, "mapper", void 0);
-    CommitSubsetToCommitPath = __decorate([
+    ], CommitSubset.prototype, "n", void 0);
+    CommitSubset = __decorate([
         (0, inversify_1.injectable)()
-    ], CommitSubsetToCommitPath);
-    return CommitSubsetToCommitPath;
+    ], CommitSubset);
+    return CommitSubset;
 }());
-exports.CommitSubsetToCommitPath = CommitSubsetToCommitPath;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQ29tbWl0U3Vic2V0LmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vc3JjL0NvbW1pdFN1YnNldC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSx1Q0FBdUQ7QUFDdkQsMkRBQTZEO0FBTTdELGlDQUF1RztBQUd2RztJQUFBO1FBZUk7O1dBRUc7UUFFSCxTQUFJLEdBQVcsQ0FBQyxDQUFDO0lBaUJyQixDQUFDO0lBTlMsNkNBQVUsR0FBaEI7Ozs7OzRCQUM4QixxQkFBTSxJQUFJLENBQUMsUUFBUSxDQUFDLGNBQWMsQ0FBQyxJQUFJLENBQUMsTUFBTSxFQUFFLElBQUksQ0FBQyxJQUFJLEVBQUUsSUFBSSxDQUFDLENBQUMsQ0FBQyxFQUFBOzt3QkFBdEYsT0FBTyxHQUFhLFNBQWtFO3dCQUN0RixXQUFXLEdBQWlCLElBQUksQ0FBQyxNQUFNLENBQUMsR0FBRyxDQUFDLE9BQU8sQ0FBQyxDQUFBO3dCQUMxRCxzQkFBTyxXQUFXLEVBQUM7Ozs7S0FDdEI7O0lBNUJEO1FBREMsSUFBQSxrQkFBTSxFQUFDLHNGQUE4RSxDQUFDLEVBQUUsQ0FBQztzREFDaEYsd0JBQUUsb0JBQUYsd0JBQUU7OERBQW1CO0lBTy9CO1FBREMsSUFBQSxrQkFBTSxFQUFDLHNGQUE4RSxDQUFDLE1BQU0sQ0FBQzs7NERBQy9FO0lBTWY7UUFEQyxJQUFBLG9CQUFRLEdBQUU7UUFBRSxJQUFBLGtCQUFNLEVBQUMsc0ZBQThFLENBQUMsSUFBSSxDQUFDOzswREFDdkY7SUFNakI7UUFEQyxJQUFBLGtCQUFNLEVBQUMsc0ZBQThFLENBQUMsQ0FBQyxDQUFDOzt1REFDL0U7SUFHVjtRQURDLElBQUEsa0JBQU0sRUFBQyxzRkFBOEUsQ0FBQyx3QkFBd0IsQ0FBQzs7NERBQy9FO0lBNUJ4Qix3QkFBd0I7UUFEcEMsSUFBQSxzQkFBVSxHQUFFO09BQ0Esd0JBQXdCLENBb0NwQztJQUFELCtCQUFDO0NBQUEsQUFwQ0QsSUFvQ0M7QUFwQ1ksNERBQXdCIn0=
+exports.CommitSubset = CommitSubset;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiQ29tbWl0U3Vic2V0LmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vc3JjL0NvbW1pdFN1YnNldC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFDQSx1Q0FBNkM7QUFFN0MsaUNBQXFGO0FBSXJGO0lBQUE7UUFHSSxTQUFJLEdBQVcsQ0FBQyxDQUFDO0lBMENyQixDQUFDO0lBckNHOzs7T0FHRztJQUNHLGlDQUFVLEdBQWhCLFVBQWlCLFVBQXdCOzs7OztnQkFDL0IsV0FBVyxHQUFHLEVBQUUsQ0FBQTtnQkFDaEIsT0FBTyxHQUFHLEVBQUUsQ0FBQztnQkFDYixTQUFTLEdBQUcsSUFBSSxHQUFHLEVBQWtCLENBQUE7Z0JBQ3JDLGFBQWEsR0FBRyxJQUFJLEdBQUcsRUFBd0IsQ0FBQTs7b0JBRXJELEtBQWtCLGVBQUEsU0FBQSxVQUFVLENBQUEsb0dBQUU7d0JBQW5CLEdBQUc7d0JBQ1YsSUFBSSxDQUFDLGNBQWMsQ0FBQyxhQUFhLEVBQUUsR0FBRyxDQUFDLENBQUE7d0JBQ3ZDLElBQUksU0FBUyxDQUFDLEdBQUcsQ0FBQyxHQUFHLENBQUMsTUFBTSxDQUFDLElBQUksQ0FBQyxJQUFJLElBQUk7NEJBQUUsU0FBUTt3QkFFcEQsU0FBUyxDQUFDLEdBQUcsQ0FBQyxHQUFHLENBQUMsTUFBTSxDQUFDLElBQUksRUFBRSxHQUFHLENBQUMsTUFBTSxDQUFDLENBQUE7d0JBQzFDLE9BQU8sQ0FBQyxJQUFJLENBQUMsR0FBRyxDQUFDLE1BQU0sQ0FBQyxDQUFBO3FCQUMzQjs7Ozs7Ozs7O2dCQUVELEtBQVMsQ0FBQyxHQUFHLElBQUksQ0FBQyxJQUFJLEVBQUUsQ0FBQyxHQUFHLElBQUksQ0FBQyxJQUFJLEdBQUcsSUFBSSxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtvQkFDakQsSUFBSSxDQUFDLEdBQUcsT0FBTyxDQUFDLE1BQU07d0JBQ2xCLE1BQU0sSUFBSSxLQUFLLENBQUMsK0RBQTZELElBQUksQ0FBQyxJQUFJLGdCQUFXLElBQUksQ0FBQyxDQUFHLENBQUMsQ0FBQTtvQkFDeEcsR0FBRyxHQUFHLE9BQU8sQ0FBQyxDQUFDLENBQUMsQ0FBQztvQkFDdkIsV0FBVyxDQUFDLElBQUksT0FBaEIsV0FBVywyQkFBUyxhQUFhLENBQUMsR0FBRyxDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsV0FBQztpQkFDbkQ7Z0JBRUQsc0JBQU8sV0FBVyxFQUFDOzs7S0FDdEI7SUFFTyxxQ0FBYyxHQUF0QixVQUF1QixhQUF3QyxFQUFFLEdBQWU7UUFDNUUsSUFBSSxHQUFHLEdBQUcsYUFBYSxDQUFDLEdBQUcsQ0FBQyxHQUFHLENBQUMsTUFBTSxDQUFDLElBQUksQ0FBQyxDQUFBO1FBQzVDLElBQUksQ0FBQSxHQUFHLGFBQUgsR0FBRyx1QkFBSCxHQUFHLENBQUUsTUFBTSxJQUFHLENBQUM7WUFDZixHQUFHLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQyxDQUFBO1FBQ2pCLElBQUksR0FBRyxJQUFJLElBQUk7WUFDWCxHQUFHLEdBQUcsQ0FBQyxHQUFHLENBQUMsQ0FBQTtRQUNmLGFBQWEsQ0FBQyxHQUFHLENBQUMsR0FBRyxDQUFDLE1BQU0sQ0FBQyxJQUFJLEVBQUUsR0FBRyxDQUFDLENBQUE7SUFDM0MsQ0FBQztJQXhDRDtRQURDLElBQUEsa0JBQU0sRUFBQyxvRUFBNEQsQ0FBQyxJQUFJLENBQUM7OzhDQUN6RDtJQUdqQjtRQURDLElBQUEsa0JBQU0sRUFBQyxvRUFBNEQsQ0FBQyxDQUFDLENBQUM7OzJDQUM3RDtJQU5ELFlBQVk7UUFEeEIsSUFBQSxzQkFBVSxHQUFFO09BQ0EsWUFBWSxDQTZDeEI7SUFBRCxtQkFBQztDQUFBLEFBN0NELElBNkNDO0FBN0NZLG9DQUFZIn0=
