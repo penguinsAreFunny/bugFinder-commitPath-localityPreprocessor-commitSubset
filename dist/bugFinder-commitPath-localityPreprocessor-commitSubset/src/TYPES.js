@@ -1,0 +1,9 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES = void 0;
+exports.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES = {
+    skip: Symbol("Skip"),
+    n: Symbol("n"),
+    pathsHandling: Symbol("PathHandling")
+};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiVFlQRVMuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi9zcmMvVFlQRVMudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7O0FBQWEsUUFBQSw0REFBNEQsR0FBRztJQUN4RSxJQUFJLEVBQUUsTUFBTSxDQUFDLE1BQU0sQ0FBQztJQUNwQixDQUFDLEVBQUssTUFBTSxDQUFDLEdBQUcsQ0FBQztJQUNqQixhQUFhLEVBQWUsTUFBTSxDQUFDLGNBQWMsQ0FBQztDQUNyRCxDQUFBIn0=
