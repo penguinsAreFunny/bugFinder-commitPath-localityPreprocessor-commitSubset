@@ -1,12 +1,8 @@
 import {LocalityPreprocessor, SHARED_TYPES} from "bugfinder-framework";
 import {inject, injectable, optional} from "inversify";
-import {CommitPath} from "bugfinder-localityrecorder-commitpath";
+import {CommitPath, PathsHandling} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES} from "./TYPES";
 import {Commit, GitFileType} from "bugfinder-localityrecorder-commit";
-import {
-    BUGFINDER_LOCALITYRECORDER_COMMITPATH_TYPES,
-    PathsHandling
-} from "../../bugFinder-localityRecorder-commitPath/src";
 import {Logger} from "ts-log";
 
 const REMOVED_BECAUSE_GITDELETED =

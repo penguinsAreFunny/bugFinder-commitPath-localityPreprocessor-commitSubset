@@ -1,6 +1,5 @@
 import { LocalityPreprocessor } from "bugfinder-framework";
-import { CommitPath } from "bugfinder-localityrecorder-commitpath";
-import { PathsHandling } from "../../bugFinder-localityRecorder-commitPath/src";
+import { CommitPath, PathsHandling } from "bugfinder-localityrecorder-commitpath";
 import { Logger } from "ts-log";
 export declare class CommitSubset implements LocalityPreprocessor<CommitPath> {
     logger: Logger;
