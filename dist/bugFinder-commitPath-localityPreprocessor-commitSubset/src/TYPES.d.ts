@@ -2,4 +2,5 @@ export declare const BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPE
     skip: symbol;
     n: symbol;
     pathsHandling: symbol;
+    logger: symbol;
 };

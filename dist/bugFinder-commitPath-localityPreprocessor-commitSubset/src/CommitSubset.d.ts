@@ -1,10 +1,17 @@
 import { LocalityPreprocessor } from "bugfinder-framework";
 import { CommitPath } from "bugfinder-localityrecorder-commitpath";
 import { PathsHandling } from "../../bugFinder-localityRecorder-commitPath/src";
+import { Logger } from "ts-log";
 export declare class CommitSubset implements LocalityPreprocessor<CommitPath> {
+    logger: Logger;
     pathsHandling: PathsHandling;
     skip: number;
     n: number;
+    /**
+     * All removed CommitPaths with reason why they have been removed
+     * @private
+     */
+    private removedCommitPaths;
     /**
      * Returns the CommitPaths of the n Commits after the Skip commit
      * @param localities
