@@ -1,4 +1,4 @@
-import {LocalityPreprocessor} from "bugfinder-framework";
+import {LocalityPreprocessor, SHARED_TYPES} from "bugfinder-framework";
 import {inject, injectable, optional} from "inversify";
 import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES} from "./TYPES";
@@ -7,6 +7,7 @@ import {
     BUGFINDER_LOCALITYRECORDER_COMMITPATH_TYPES,
     PathsHandling
 } from "../../bugFinder-localityRecorder-commitPath/src";
+import {Logger} from "ts-log";
 
 const REMOVED_BECAUSE_GITDELETED =
     "CommitPath has been removed, because the given path was deleted with commit"
@@ -14,8 +15,13 @@ const REMOVED_BECAUSE_PATH_INCLUDE =
     "CommitPath has been removed, because the give path did not match the path-include-pattern"
 const REMOVED_BECAUSE_EMPTY_COMMIT =
     "CommitPath has been removed, because there were no paths given for that commit"
+
+
 @injectable()
 export class CommitSubset implements LocalityPreprocessor<CommitPath> {
+    @optional() @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.logger)
+    logger: Logger
+
     @optional() @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.pathsHandling)
     pathsHandling: PathsHandling;
 
@@ -50,12 +56,14 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         }
 
         const upperLimit = this.n == null ? commits.length : this.skip + this.n
-        console.log("Skip :", this.skip)
-        console.log("Upperlimit: ", upperLimit)
+        this.logger.info("Skip :", this.skip)
+        this.logger.info("Upperlimit: ", upperLimit)
 
         for (let i = this.skip; i < upperLimit; i++) {
-            if (i > commits.length)
+            if (i > commits.length){
+                this.logger.error(`There are not enough commits in localities for used skip: ${this.skip} and n: ${this.n}`)
                 throw new Error(`There are not enough commits in localities for used skip: ${this.skip} and n: ${this.n}`)
+            }
             const cur = commits[i];
             commitPaths.push(...commitPathMap.get(cur.hash))
         }
@@ -73,7 +81,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
     }
 
     public applyPathHandling(localities: CommitPath[]): CommitPath[] {
-        console.log(`Applying path handling for ${localities.length} localities.`)
+        this.logger.info(`Applying path handling for ${localities.length} localities.`)
         let commits: Commit[] = CommitPath.getCommits(localities);
 
         // pathsHandling: filter commitPath which do not comply the pathIncludes pattern
@@ -90,7 +98,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
 
         if (this.pathsHandling && this.pathsHandling.pathIncludes) {
             localities = localities.filter(filterPathIncludes);
-            console.log("localities after filtering pathIncludes: ", localities.length)
+            this.logger.info("localities after filtering pathIncludes: ", localities.length)
         }
 
         // remove paths which are deleted
@@ -105,7 +113,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
             return true;
         }
         localities = localities.filter(removeDeletedPaths);
-        console.log("localities after removing deleted paths: ", localities.length)
+        this.logger.info("localities after removing deleted paths: ", localities.length)
 
         const localityMap = new Map<string, CommitPath>();
         localities.forEach(l => {
@@ -138,11 +146,16 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
             this.removedCommitPaths.push({commitPath: commitPath, reason: REMOVED_BECAUSE_EMPTY_COMMIT})
         }
         localities = localities.filter(removeEmptyPath)
-        console.log("Localities after removing CommitPaths not containing a path. " +
+        this.logger.info("Localities after removing CommitPaths not containing a path. " +
             "These were used to reconstruct commits")
 
-        console.log("localities after injecting pathInjections: ", localities.length)
-        console.log(`PathHandling got ${localities.length} localities from ${commits.length} commits.`)
+        this.logger.info("localities after injecting pathInjections: ", localities.length)
+        this.logger.info(`PathHandling got ${localities.length} localities from ${commits.length} commits.`)
+
+        this.removedCommitPaths.forEach(cp => {
+            this.logger.debug(cp.reason, cp.commitPath.commit.hash, cp.commitPath.path, cp.commitPath.path.type)
+        })
+
         return localities;
     }
 
