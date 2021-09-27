@@ -8,17 +8,28 @@ import {
     PathsHandling
 } from "../../bugFinder-localityRecorder-commitPath/src";
 
+const REMOVED_BECAUSE_GITDELETED =
+    "CommitPath has been removed, because the given path was deleted with commit"
+const REMOVED_BECAUSE_PATH_INCLUDE =
+    "CommitPath has been removed, because the give path did not match the path-include-pattern"
+const REMOVED_BECAUSE_EMPTY_COMMIT =
+    "CommitPath has been removed, because there were no paths given for that commit"
 @injectable()
 export class CommitSubset implements LocalityPreprocessor<CommitPath> {
     @optional() @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.pathsHandling)
     pathsHandling: PathsHandling;
-
 
     @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.skip)
     skip: number = 0;
 
     @optional() @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.n)
     n: number;
+
+    /**
+     * All removed CommitPaths with reason why they have been removed
+     * @private
+     */
+    private removedCommitPaths: Array<{ commitPath: CommitPath, reason: string }> = []
 
     /**
      * Returns the CommitPaths of the n Commits after the Skip commit
@@ -67,7 +78,13 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
 
         // pathsHandling: filter commitPath which do not comply the pathIncludes pattern
         const filterPathIncludes: (CommitPath) => boolean = (commitPath: CommitPath) => {
-            if (commitPath.path) return this.pathsHandling.pathIncludes.test(commitPath.path.path);
+            if (commitPath.path) {
+                const pathIncludeMatch = this.pathsHandling.pathIncludes.test(commitPath.path.path)
+                if (!pathIncludeMatch)
+                    this.removedCommitPaths.push({commitPath: commitPath, reason: REMOVED_BECAUSE_PATH_INCLUDE})
+
+                return pathIncludeMatch
+            }
             return true;
         }
 
@@ -78,7 +95,13 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
 
         // remove paths which are deleted
         const removeDeletedPaths: (CommitPath) => boolean = (commitPath: CommitPath) => {
-            if (commitPath.path) return commitPath.path.type !== GitFileType.deleted;
+            if (commitPath.path) {
+                const isDeleted = commitPath.path.type === GitFileType.deleted;
+                if (isDeleted)
+                    this.removedCommitPaths.push({commitPath: commitPath, reason: REMOVED_BECAUSE_GITDELETED})
+
+                return !isDeleted;
+            }
             return true;
         }
         localities = localities.filter(removeDeletedPaths);
@@ -112,6 +135,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         // delete commitPaths without a path
         const removeEmptyPath = (commitPath: CommitPath) => {
             if (commitPath.path != null) return true
+            this.removedCommitPaths.push({commitPath: commitPath, reason: REMOVED_BECAUSE_EMPTY_COMMIT})
         }
         localities = localities.filter(removeEmptyPath)
         console.log("Localities after removing CommitPaths not containing a path. " +
