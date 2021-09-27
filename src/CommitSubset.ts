@@ -30,18 +30,12 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         const commitMap = new Map<string, Commit>()
         const commitPathMap = new Map<string, CommitPath[]>()
 
-        let i = 0
         for (const loc of localities) {
             this.setCommitPaths(commitPathMap, loc)
             if (commitMap.get(loc.commit.hash) != null) continue
 
             commitMap.set(loc.commit.hash, loc.commit)
             commits.push(loc.commit)
-
-            if (i == localities.length - 2) {
-                console.log(loc.commit.hash)
-            }
-            i++
         }
 
         const upperLimit = this.n == null ? commits.length : this.skip + this.n
