@@ -149,7 +149,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         this.logger.info(`PathHandling got ${localities.length} localities from ${commits.length} commits.`)
 
         this.removedCommitPaths.forEach(cp => {
-            this.logger.debug(cp.reason, cp.commitPath.commit.hash, cp.commitPath.path, cp.commitPath.path.type)
+            this.logger.debug(cp.reason, cp.commitPath.commit.hash, cp.commitPath.path, cp.commitPath.path?.type)
         })
 
         return localities;
