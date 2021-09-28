@@ -163,10 +163,10 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         }
         localities = localities.filter(removeEmptyPath)
         this.logger.info("Localities after removing CommitPaths not containing a path. " +
-            "These were used to reconstruct commits")
+            "These were used to reconstruct commits", localities.length)
 
         localities = this.removeRedundantCommitPaths(localities)
-        this.logger.info("Localities after removing redundant CommitPaths: " + localities.length)
+        this.logger.info("Localities after removing redundant CommitPaths: ", localities.length)
 
         this.logger.info(`PathHandling got ${localities.length} localities from ${commits.length} commits.`)
 
@@ -181,38 +181,20 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         const nonRedundantCPs: CommitPath[] = []
         const map = new Map<string, CommitPath[]>()
 
+        // adding cp to map. If element already exists it is redundant
         const addToMap = (map: Map<string, CommitPath[]>, cp: CommitPath) => {
             const key = cp.commit.hash + cp.path?.path
             let cps = map.get(key)
             if (cps == null) {
                 map.set(key, [cp])
-            } else {
-                cps.push(cp)
-                map.set(key, cps)
-            }
-        }
-
-        const cpAlreadyExists = (map: Map<string, CommitPath[]>, cp: CommitPath) => {
-            const key = cp.commit.hash + cp.path?.path
-            const cps = map.get(key)
-            for (const el of cps) {
-                if (cp.is(el)) {
-                    return true
-                }
-            }
-            return false
-        }
-
-        for (const cp of commitPaths) {
-            addToMap(map, cp)
-        }
-
-        for (const cp of commitPaths) {
-            if (!cpAlreadyExists(map, cp)) {
                 nonRedundantCPs.push(cp)
             } else {
                 this.removedCommitPaths.push({commitPath: cp, reason: REMOVED_BECAUSE_REDUNDANT})
             }
+        }
+
+        for (const cp of commitPaths) {
+            addToMap(map, cp)
         }
 
         return nonRedundantCPs
