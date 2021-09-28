@@ -14,6 +14,8 @@ const REMOVED_BECAUSE_EMPTY_COMMIT =
     "CommitPath has been removed, because there were no paths given for that commit"
 const REMOVED_BECAUSE_PATH_EXCLUDE =
     "CommitPath has been removed, because the given path matched the path-exclude-pattern"
+const REMOVED_BECAUSE_REDUNDANT =
+    "CommitPath has been removed, because it was redundant. This might occur due to path injections."
 
 @injectable()
 export class CommitSubset implements LocalityPreprocessor<CommitPath> {
@@ -58,7 +60,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         this.logger.info("Upperlimit: ", upperLimit)
 
         for (let i = this.skip; i < upperLimit; i++) {
-            if (i > commits.length){
+            if (i > commits.length) {
                 this.logger.error(`There are not enough commits in localities for used skip: ${this.skip} and n: ${this.n}`)
                 throw new Error(`There are not enough commits in localities for used skip: ${this.skip} and n: ${this.n}`)
             }
@@ -140,6 +142,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
                 return
             }
             this.pathsHandling?.injections?.forEach(injection => {
+                // inject paths
                 const injectedCommitPath = new CommitPath();
                 injectedCommitPath.commit = commit;
                 injectedCommitPath.path = {
@@ -151,6 +154,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
             })
 
         });
+        this.logger.info("localities after injecting pathInjections: ", localities.length)
 
         // delete commitPaths without a path
         const removeEmptyPath = (commitPath: CommitPath) => {
@@ -161,7 +165,9 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         this.logger.info("Localities after removing CommitPaths not containing a path. " +
             "These were used to reconstruct commits")
 
-        this.logger.info("localities after injecting pathInjections: ", localities.length)
+        localities = this.removeRedundantCommitPaths(localities)
+        this.logger.info("Localities after removing redundant CommitPaths: " + localities.length)
+
         this.logger.info(`PathHandling got ${localities.length} localities from ${commits.length} commits.`)
 
         this.removedCommitPaths.forEach(cp => {
@@ -169,6 +175,48 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         })
 
         return localities;
+    }
+
+    private removeRedundantCommitPaths(commitPaths: CommitPath[]): CommitPath[] {
+        const nonRedundantCPs: CommitPath[] = []
+        const map = new Map<string, CommitPath[]>()
+
+        const addToMap = (map: Map<string, CommitPath[]>, cp: CommitPath) => {
+            const key = cp.commit.hash + cp.path?.path
+            let cps = map.get(key)
+            if (cps == null) {
+                map.set(key, [cp])
+            } else {
+                cps.push(cp)
+                map.set(key, cps)
+            }
+        }
+
+        const cpAlreadyExists = (map: Map<string, CommitPath[]>, cp: CommitPath) => {
+            const key = cp.commit.hash + cp.path?.path
+            const cps = map.get(key)
+            for (const el of cps) {
+                if (cp.is(el)) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        for (const cp of commitPaths) {
+            addToMap(map, cp)
+        }
+
+        for (const cp of commitPaths) {
+            if (!cpAlreadyExists(map, cp)) {
+                nonRedundantCPs.push(cp)
+            } else {
+                this.removedCommitPaths.push({commitPath: cp, reason: REMOVED_BECAUSE_REDUNDANT})
+            }
+        }
+
+        return nonRedundantCPs
+
     }
 
 }
