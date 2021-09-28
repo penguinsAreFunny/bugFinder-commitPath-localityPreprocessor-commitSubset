@@ -19,4 +19,5 @@ export declare class CommitSubset implements LocalityPreprocessor<CommitPath> {
     preprocess(localities: CommitPath[]): Promise<CommitPath[]>;
     private setCommitPaths;
     applyPathHandling(localities: CommitPath[]): CommitPath[];
+    private removeRedundantCommitPaths;
 }
