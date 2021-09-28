@@ -1,9 +1,10 @@
 import {LocalityPreprocessor, SHARED_TYPES} from "bugfinder-framework";
 import {inject, injectable, optional} from "inversify";
-import {CommitPath, PathsHandling} from "bugfinder-localityrecorder-commitpath";
+import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES} from "./TYPES";
 import {Commit, GitFileType} from "bugfinder-localityrecorder-commit";
 import {Logger} from "ts-log";
+import {PathsHandling} from "./PathHandling";
 
 const REMOVED_BECAUSE_GITDELETED =
     "CommitPath has been removed, because the given path was deleted with commit"
@@ -11,7 +12,8 @@ const REMOVED_BECAUSE_PATH_INCLUDE =
     "CommitPath has been removed, because the give path did not match the path-include-pattern"
 const REMOVED_BECAUSE_EMPTY_COMMIT =
     "CommitPath has been removed, because there were no paths given for that commit"
-
+const REMOVED_BECAUSE_PATH_EXCLUDE =
+    "CommitPath has been removed, because the given path matched the path-exclude-pattern"
 
 @injectable()
 export class CommitSubset implements LocalityPreprocessor<CommitPath> {
@@ -115,6 +117,20 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         localities.forEach(l => {
             localityMap.set(l.commit.hash, l);
         })
+
+        // remove pathExcludes
+        const removePathExcludes: (CommitPath) => boolean = (commitPath: CommitPath) => {
+            if (commitPath.path) {
+                const pathExcludeMatch = this.pathsHandling.pathExcludes.test(commitPath.path.path)
+                if (pathExcludeMatch)
+                    this.removedCommitPaths.push({commitPath: commitPath, reason: REMOVED_BECAUSE_PATH_EXCLUDE})
+
+                return !pathExcludeMatch
+            }
+            return true;
+        }
+        localities = localities.filter(removePathExcludes)
+        this.logger.info("localities after removing path excludes ", localities.length)
 
         // inject paths for each unique commit
         commits.forEach(commit => {
