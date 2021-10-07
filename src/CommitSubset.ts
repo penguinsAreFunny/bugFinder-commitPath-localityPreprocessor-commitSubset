@@ -147,7 +147,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
                 injectedCommitPath.commit = commit;
                 injectedCommitPath.path = {
                     path: injection,
-                    type: GitFileType.other
+                    type: GitFileType.injected
                 };
                 localities.push(injectedCommitPath);
                 localityMap.set(commit.hash, injectedCommitPath)
