@@ -1,4 +1,4 @@
-import {LocalityPreprocessor, SHARED_TYPES} from "bugfinder-framework";
+import {LocalityPreprocessor} from "bugfinder-framework";
 import {inject, injectable, optional} from "inversify";
 import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES} from "./TYPES";
@@ -182,11 +182,11 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         const map = new Map<string, CommitPath[]>()
 
         // adding cp to map. If element already exists it is redundant
-        const addToMap = (map: Map<string, CommitPath[]>, cp: CommitPath) => {
+        const addToMap = (map2: Map<string, CommitPath[]>, cp: CommitPath) => {
             const key = cp.commit.hash + cp.path?.path
-            let cps = map.get(key)
+            let cps = map2.get(key)
             if (cps == null) {
-                map.set(key, [cp])
+                map2.set(key, [cp])
                 nonRedundantCPs.push(cp)
             } else {
                 this.removedCommitPaths.push({commitPath: cp, reason: REMOVED_BECAUSE_REDUNDANT})
