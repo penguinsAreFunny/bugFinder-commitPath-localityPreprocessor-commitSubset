@@ -9,11 +9,11 @@ export interface PathsHandling {
      * The matched files will be quantified
      * F.e.: \/*.ts\b for just adding paths ending with .ts.
      */
-    pathIncludes?: RegExp;
+    pathIncludes?: RegExp[];
     /**
      * Remove all CommitPaths which should not be used.
      */
-    pathExcludes?: RegExp;
+    pathExcludes?: RegExp[];
     /**
      * Paths which should be injected and therefore quantified.
      * F.e. ["src"] if relative values to whole src should be evaluated
