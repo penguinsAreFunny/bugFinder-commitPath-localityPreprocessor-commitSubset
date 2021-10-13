@@ -80,6 +80,22 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         commitPathMap.set(loc.commit.hash, cps)
     }
 
+    private includeMatch(path: string): boolean {
+        for (const matcher of this.pathsHandling.pathIncludes) {
+            const match = matcher.test(path)
+            if (match) return true
+        }
+        return false
+    }
+
+    private excludeMatch(path: string): boolean {
+        for (const matcher of this.pathsHandling.pathExcludes) {
+            const match = matcher.test(path)
+            if (match) return true
+        }
+        return false
+    }
+
     public applyPathHandling(localities: CommitPath[]): CommitPath[] {
         this.logger.info(`Applying path handling for ${localities.length} localities.`)
         let commits: Commit[] = CommitPath.getCommits(localities);
@@ -87,7 +103,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         // pathsHandling: filter commitPath which do not comply the pathIncludes pattern
         const filterPathIncludes: (CommitPath) => boolean = (commitPath: CommitPath) => {
             if (commitPath.path) {
-                const pathIncludeMatch = this.pathsHandling.pathIncludes.test(commitPath.path.path)
+                const pathIncludeMatch = this.includeMatch(commitPath.path.path)
                 if (!pathIncludeMatch)
                     this.removedCommitPaths.push({commitPath: commitPath, reason: REMOVED_BECAUSE_PATH_INCLUDE})
 
@@ -96,7 +112,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
             return true;
         }
 
-        if (this.pathsHandling && this.pathsHandling.pathIncludes) {
+        if (this.pathsHandling && this.pathsHandling.pathIncludes.length > 0) {
             localities = localities.filter(filterPathIncludes);
             this.logger.info("localities after filtering pathIncludes: ", localities.length)
         }
@@ -123,7 +139,7 @@ export class CommitSubset implements LocalityPreprocessor<CommitPath> {
         // remove pathExcludes
         const removePathExcludes: (CommitPath) => boolean = (commitPath: CommitPath) => {
             if (commitPath.path) {
-                const pathExcludeMatch = this.pathsHandling.pathExcludes.test(commitPath.path.path)
+                const pathExcludeMatch = this.excludeMatch(commitPath.path.path)
                 if (pathExcludeMatch)
                     this.removedCommitPaths.push({commitPath: commitPath, reason: REMOVED_BECAUSE_PATH_EXCLUDE})
 

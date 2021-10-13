@@ -41,6 +41,6 @@
     "@types/node": "^15.12.2",
     "bugfinder-framework": "^9.6.0",
     "bugfinder-localityrecorder-commit": "^2.3.0",
-    "bugfinder-localityrecorder-commitpath": "^1.17.0"
+    "bugfinder-localityrecorder-commitpath": "^1.20.0"
   }
 }

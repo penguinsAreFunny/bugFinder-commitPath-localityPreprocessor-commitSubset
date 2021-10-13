@@ -9,22 +9,22 @@ export interface PathsHandling {
      * The matched files will be quantified
      * F.e.: \/*.ts\b for just adding paths ending with .ts.
      */
-    pathIncludes?: RegExp;
+    pathIncludes?: RegExp[]
 
     /**
      * Remove all CommitPaths which should not be used.
      */
-    pathExcludes?: RegExp
+    pathExcludes?: RegExp[]
 
     /**
      * Paths which should be injected and therefore quantified.
      * F.e. ["src"] if relative values to whole src should be evaluated
      */
-    injections: string[];
+    injections: string[]
 
     /**
      * Determines whether paths should be injected
      * if the only paths remaining would be the injected ones
      */
-    injectOnEmptyPaths: boolean;
+    injectOnEmptyPaths: boolean
 }
