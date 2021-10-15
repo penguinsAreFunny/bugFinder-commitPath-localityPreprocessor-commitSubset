@@ -1,4 +1,4 @@
-import {LocalityPreprocessor} from "bugfinder-framework";
+import {LocalityPreprocessor, SHARED_TYPES} from "bugfinder-framework";
 import {inject, injectable, optional} from "inversify";
 import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES} from "./TYPES";
@@ -19,7 +19,7 @@ const REMOVED_BECAUSE_REDUNDANT =
 
 @injectable()
 export class CommitSubset implements LocalityPreprocessor<CommitPath> {
-    @optional() @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.logger)
+    @optional() @inject(SHARED_TYPES.logger)
     logger: Logger
 
     @optional() @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.pathsHandling)
