@@ -22,7 +22,7 @@ import {
 import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {
     BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES,
-    CommitSubset
+    Predecessors
 } from "bugfinder-commitpath-localitypreprocessor-commitsubset";
 import {localityBContainer} from "bugFinder-framework-defaultContainer";
 import {Logger} from "ts-log";
@@ -55,7 +55,7 @@ const mongoDBConfig: MongoDBConfig = {
 }
 
 // localityPreprocessor and its config
-container.bind<LocalityPreprocessor<CommitPath>>(LOCALITY_B_TYPES.localityPreprocessor).to(CommitSubset);
+container.bind<LocalityPreprocessor<CommitPath>>(LOCALITY_B_TYPES.localityPreprocessor).to(Predecessors);
 container.bind<PathsHandling>(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.pathsHandling).toConstantValue(pathsOptions)
 container.bind<number>(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.skip).toConstantValue(10000); // ignoring the first 10k Commits
 container.bind<number>(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.n).toConstantValue(20000); // iterating over 20k Commits after skip 

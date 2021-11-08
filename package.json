@@ -7,7 +7,6 @@
   "scripts": {
     "build": "npm run clean && tsc --project .",
     "clean": "rimraf ./dist",
-    "prepare": "npm run build",
     "version": "npm run build && git add -A dist",
     "postversion": "git push && git push --tags",
     "pack": "npm pack"
